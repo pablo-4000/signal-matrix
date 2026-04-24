@@ -8,6 +8,8 @@ on:
 jobs:
   generate-report:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to commit and push report.html
  
     steps:
       - name: Checkout repository
