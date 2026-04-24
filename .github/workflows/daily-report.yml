@@ -1,0 +1,37 @@
+name: Daily Market Intelligence Report
+ 
+on:
+  schedule:
+    - cron: '0 7 * * 1-5'   # 07:00 UTC, Monday–Friday (before EU markets open)
+  workflow_dispatch:          # also allows manual trigger from GitHub UI
+ 
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+ 
+      - name: Install dependencies
+        run: pip install anthropic
+ 
+      - name: Run market intelligence report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python run_report.py
+ 
+      - name: Commit and push report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add report.html
+          git diff --staged --quiet && echo "No changes to commit" || (
+            git commit -m "Market report $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+          )
